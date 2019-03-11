@@ -1,0 +1,97 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="app_name">Window Alarm Config</string>
+    <string name="app_author_name">Hendrik van Essen</string>
+    <string name="app_author_country">Germany</string>
+    <string name="app_github_project_link">https://github.com/HendrikVE/smarthome2/</string>
+
+    <!-- begin activity titles -->
+    <string name="title_activity_device_scan">Device scan</string>
+    <string name="title_activity_device_config">Device config</string>
+    <string name="title_activity_about_app">About this app</string>
+    <!-- end activity titles -->
+
+    <!-- begin actions -->
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_scan">Scan</string>
+    <!-- end actions -->
+
+    <!-- begin dialogs -->
+    <string name="dialog_request_coarse_location_title">Access to location not granted</string>
+    <string name="dialog_request_coarse_location_message">Please allow access to location, otherwise your device is not able to scan for BLE devices.</string>
+
+    <string name="dialog_coarse_location_permitted_title">Access to location permitted</string>
+    <string name="dialog_coarse_location_permitted_message">Please allow access to location, otherwise your device is not able to scan for BLE devices. You need to enable it manually in the app\'s settings page.</string>
+
+    <string name="dialog_bluetooth_device_connecting_title">Connecting to device…</string>
+    <string name="dialog_bluetooth_device_writing_title">Write config to device…</string>
+    <string name="dialog_bluetooth_device_connection_error_title">Could not connect to device</string>
+    <string name="dialog_bluetooth_device_connection_error_message">An error occurred while making the connection. Please try again.</string>
+    <string name="dialog_bluetooth_device_not_supported_title">Device not supported</string>
+    <string name="dialog_bluetooth_device_not_supported_message">The selected device does not offer the required service to configure it as a window alert node.</string>
+    <string name="dialog_bluetooth_device_write_error_title">Could not write data</string>
+    <string name="dialog_bluetooth_device_write_error_message">It was not possible to write all data to the device. Please refresh the connection and retry.</string>
+    <string name="dialog_bluetooth_device_read_error_title">Could not read data</string>
+    <string name="dialog_bluetooth_device_read_error_message">It was not possible to read all data from the device. Please refresh the connection and retry.</string>
+    <string name="dialog_bluetooth_device_disconnected_title">Device disconnected</string>
+    <string name="dialog_bluetooth_device_disconnected_message">The device is disconnected. Please refresh the connection and retry.</string>
+    <!-- end dialogs -->
+
+    <string name="github_project_link_text">\u0040github</string>
+
+    <string name="license_title">License</string>
+    <string name="license_text" tools:ignore="TypographyOther">
+        <![CDATA[
+            The MIT License (MIT)<br>
+            <br>
+            Copyright (c) 2018 Hendrik van Essen<br>
+            <br>
+            Permission is hereby granted, free of charge, to any person obtaining a copy
+            of this software and associated documentation files (the "Software"), to deal
+            in the Software without restriction, including without limitation the rights
+            to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+            copies of the Software, and to permit persons to whom the Software is
+            furnished to do so, subject to the following conditions:<br>
+            <br>
+            The above copyright notice and this permission notice shall be included in
+            all copies or substantial portions of the Software.<br>
+            <br>
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+            THE SOFTWARE.
+        ]]>
+    </string>
+
+    <!-- begin (generic) texts -->
+    <string name="text_version">Version</string>
+    <string name="text_license">License</string>
+    <string name="text_author">Author</string>
+    <string name="text_device">Device</string>
+    <string name="text_ota">OTA</string>
+    <string name="text_wifi">WiFi</string>
+    <string name="text_mqtt">MQTT</string>
+    <string name="text_sensor">Sensor</string>
+    <string name="text_enable_bluetooth">Enable bluetooth to scan for devices</string>
+    <string name="text_devices_room">Device\'s room</string>
+    <string name="text_device_id">Device ID</string>
+    <string name="text_mqtt_username">MQTT username</string>
+    <string name="text_mqtt_password">MQTT password</string>
+    <string name="text_mqtt_broker_address">MQTT broker address</string>
+    <string name="text_mqtt_broker_port">MQTT broker port</string>
+    <string name="text_ota_server_address">OTA server address</string>
+    <string name="text_ota_filename">OTA filename</string>
+    <string name="text_ota_username">OTA username</string>
+    <string name="text_ota_password">OTA password</string>
+    <string name="text_wifi_pasword">WiFi pasword</string>
+    <string name="text_wifi_ssid">WiFi SSID</string>
+    <string name="text_sensor_poll_interval">Sensor poll interval</string>
+    <!-- end (generic) texts -->
+
+</resources>
