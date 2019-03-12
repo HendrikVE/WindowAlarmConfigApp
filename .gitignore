@@ -5,4 +5,5 @@ build/
 *.iml
 app/release/
 gradle.properties
+local.properties
 
