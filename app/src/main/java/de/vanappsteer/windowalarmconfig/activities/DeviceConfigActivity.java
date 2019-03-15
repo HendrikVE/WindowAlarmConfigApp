@@ -121,10 +121,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
         Button buttonSave = findViewById(R.id.buttonSave);
         buttonSave.setOnClickListener(view -> {
 
-            InputMethodManager imm = (InputMethodManager) DeviceConfigActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
+            hideKeyboard(this);
 
             if (mDeviceServiceBound) {
                 Map<UUID, String> map = new HashMap<>();
@@ -132,6 +129,17 @@ public class DeviceConfigActivity extends AppCompatActivity {
                 for (int i = 0; i < adapter.getCount(); i++) {
                     ConfigView configView = (ConfigView) adapter.getItem(i);
                     ConfigModel configModel = configView.getModel();
+
+                    if (configModel.isInErrorState()) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(DeviceConfigActivity.this);
+                        builder.setTitle(R.string.dialog_invalid_configuration_title);
+                        builder.setMessage(R.string.dialog_invalid_configuration_message);
+                        builder.setPositiveButton(R.string.action_ok, null);
+                        builder.create().show();
+
+                        return;
+                    }
+
                     map.putAll(configModel.getDataMap());
 
                     for (Map.Entry<UUID, String> entry : configModel.getDataMap().entrySet()) {
@@ -177,6 +185,11 @@ public class DeviceConfigActivity extends AppCompatActivity {
     public static void hideKeyboard(Activity activity) {
 
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+
+        if (imm == null) {
+            return;
+        }
+
         View view = activity.getCurrentFocus();
 
         if (view == null) {

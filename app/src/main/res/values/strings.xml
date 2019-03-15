@@ -38,6 +38,9 @@
     <string name="dialog_bluetooth_device_read_error_message">It was not possible to read all data from the device. Please refresh the connection and retry.</string>
     <string name="dialog_bluetooth_device_disconnected_title">Device disconnected</string>
     <string name="dialog_bluetooth_device_disconnected_message">The device is disconnected. Please refresh the connection and retry.</string>
+
+    <string name="dialog_invalid_configuration_title">Invalid data</string>
+    <string name="dialog_invalid_configuration_message">Please check your configuration for errors.</string>
     <!-- end dialogs -->
 
     <string name="github_project_link_text">\u0040github</string>
