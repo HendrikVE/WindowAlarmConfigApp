@@ -9,9 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import de.vanappsteer.windowalarmconfig.R;
+import de.vanappsteer.windowalarmconfig.inputvalidator.PortInputValidator;
 import de.vanappsteer.windowalarmconfig.presenter.MqttConfigPresenter;
 import de.vanappsteer.windowalarmconfig.interfaces.MqttConfigView;
 import de.vanappsteer.windowalarmconfig.models.MqttConfigModel;
+import de.vanappsteer.windowalarmconfig.util.LoggingUtil;
 import de.vanappsteer.windowalarmconfig.util.TextChangeWatcher;
 
 public class MqttConfigFragment extends Fragment implements MqttConfigView {
@@ -20,6 +22,8 @@ public class MqttConfigFragment extends Fragment implements MqttConfigView {
     private TextInputEditText mEditTextMqttPassword;
     private TextInputEditText mEditTextMqttBrokerAddress;
     private TextInputEditText mEditTextMqttBrokerPort;
+
+    private PortInputValidator mPortInputValidator = new PortInputValidator();
 
     private MqttConfigPresenter mPresenter;
 
@@ -90,7 +94,27 @@ public class MqttConfigFragment extends Fragment implements MqttConfigView {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                mPresenter.setMqttBrokerPort(editable.toString());
+
+                String inputPort = editable.toString();
+
+                mPresenter.setMqttBrokerPort(inputPort);
+
+                boolean valid;
+                try {
+                    Integer port = Integer.parseInt(inputPort);
+                    valid = mPortInputValidator.validate(port);
+                }
+                catch(NumberFormatException e) {
+                    LoggingUtil.error(e.getMessage());
+                    valid = false;
+                }
+
+                if (! valid) {
+                    mEditTextMqttBrokerPort.setError(mPortInputValidator.getValidRangeString());
+                }
+                else {
+                    mEditTextMqttBrokerPort.setError(null);
+                }
             }
         });
     }
