@@ -26,6 +26,18 @@ public class DeviceConfigModel extends ConfigModel {
         return map;
     }
 
+    @Override
+    public boolean isInErrorState() {
+
+        boolean hasEmptyFields = false;
+        hasEmptyFields |= "".equals(getDeviceRoom());
+        hasEmptyFields |= "".equals(getDeviceId());
+
+        boolean inErrorState = super.isInErrorState();
+
+        return inErrorState || hasEmptyFields;
+    }
+
 
     /* BEGIN GETTER */
     public String getDeviceRoom() {

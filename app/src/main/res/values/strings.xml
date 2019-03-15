@@ -40,7 +40,7 @@
     <string name="dialog_bluetooth_device_disconnected_message">The device is disconnected. Please refresh the connection and retry.</string>
 
     <string name="dialog_invalid_configuration_title">Invalid data</string>
-    <string name="dialog_invalid_configuration_message">Please check your configuration for errors.</string>
+    <string name="dialog_invalid_configuration_message">Please check your configuration for errors. Also check for empty fields which are mandatory.</string>
     <!-- end dialogs -->
 
     <string name="github_project_link_text">\u0040github</string>

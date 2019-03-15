@@ -26,6 +26,18 @@ public class WifiConfigModel extends ConfigModel {
         return map;
     }
 
+    @Override
+    public boolean isInErrorState() {
+
+        boolean hasEmptyFields = false;
+        hasEmptyFields |= "".equals(getWifiSsid());
+        hasEmptyFields |= "".equals(getWifiPassword());
+
+        boolean inErrorState = super.isInErrorState();
+
+        return inErrorState || hasEmptyFields;
+    }
+
 
     /* BEGIN GETTER */
     public String getWifiSsid() {

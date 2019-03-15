@@ -32,6 +32,20 @@ public class MqttConfigModel extends ConfigModel {
         return map;
     }
 
+    @Override
+    public boolean isInErrorState() {
+
+        boolean hasEmptyFields = false;
+        hasEmptyFields |= "".equals(getMqttUsername());
+        hasEmptyFields |= "".equals(getMqttPassword());
+        hasEmptyFields |= "".equals(getMqttBrokerAddress());
+        hasEmptyFields |= "".equals(getMqttBrokerPort());
+
+        boolean inErrorState = super.isInErrorState();
+
+        return inErrorState || hasEmptyFields;
+    }
+
 
     /* BEGIN GETTER */
     public String getMqttUsername() {

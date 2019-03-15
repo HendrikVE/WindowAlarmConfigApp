@@ -23,6 +23,17 @@ public class SensorConfigModel extends ConfigModel {
         return map;
     }
 
+    @Override
+    public boolean isInErrorState() {
+
+        boolean hasEmptyFields = false;
+        hasEmptyFields |= "".equals(getSensorPollInterval());
+
+        boolean inErrorState = super.isInErrorState();
+
+        return inErrorState || hasEmptyFields;
+    }
+
 
     /* BEGIN GETTER */
     public String getSensorPollInterval() {

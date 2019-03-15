@@ -32,6 +32,20 @@ public class OtaConfigModel extends ConfigModel {
         return map;
     }
 
+    @Override
+    public boolean isInErrorState() {
+
+        boolean hasEmptyFields = false;
+        hasEmptyFields |= "".equals(getOtaServerAddress());
+        hasEmptyFields |= "".equals(getOtaFilename());
+        hasEmptyFields |= "".equals(getOtaUsername());
+        hasEmptyFields |= "".equals(getOtaPassword());
+
+        boolean inErrorState = super.isInErrorState();
+
+        return inErrorState || hasEmptyFields;
+    }
+
 
     /* BEGIN GETTER */
     public String getOtaServerAddress() {
