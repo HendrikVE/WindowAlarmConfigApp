@@ -91,7 +91,7 @@
     <string name="text_ota_password">OTA password</string>
     <string name="text_wifi_pasword">WiFi pasword</string>
     <string name="text_wifi_ssid">WiFi SSID</string>
-    <string name="text_sensor_poll_interval">Sensor poll interval</string>
+    <string name="text_sensor_poll_interval">Sensor poll interval (in ms)</string>
     <!-- end (generic) texts -->
 
 </resources>
