@@ -137,6 +137,8 @@ public class DeviceConfigActivity extends AppCompatActivity {
                         builder.setPositiveButton(R.string.action_ok, null);
                         builder.create().show();
 
+                        viewPager.setCurrentItem(i);
+
                         return;
                     }
 
