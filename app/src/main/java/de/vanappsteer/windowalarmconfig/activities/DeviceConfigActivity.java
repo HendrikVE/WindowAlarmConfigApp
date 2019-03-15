@@ -1,5 +1,6 @@
 package de.vanappsteer.windowalarmconfig.activities;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 
@@ -101,6 +103,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                hideKeyboard(DeviceConfigActivity.this);
                 viewPager.setCurrentItem(tab.getPosition());
             }
 
@@ -169,6 +172,18 @@ public class DeviceConfigActivity extends AppCompatActivity {
         }
 
         DeviceConfigActivity.this.finish();
+    }
+
+    public static void hideKeyboard(Activity activity) {
+
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        View view = activity.getCurrentFocus();
+
+        if (view == null) {
+            view = new View(activity);
+        }
+
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
