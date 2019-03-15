@@ -4,7 +4,7 @@ import de.vanappsteer.windowalarmconfig.interfaces.ConfigController;
 import de.vanappsteer.windowalarmconfig.interfaces.WifiConfigView;
 import de.vanappsteer.windowalarmconfig.models.WifiConfigModel;
 
-public class WifiConfigPresenter implements ConfigController<WifiConfigModel> {
+public class WifiConfigPresenter extends ConfigController<WifiConfigModel> {
 
     private WifiConfigModel mModel;
     private WifiConfigView mView;

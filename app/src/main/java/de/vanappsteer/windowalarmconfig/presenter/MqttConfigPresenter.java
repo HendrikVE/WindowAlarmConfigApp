@@ -4,7 +4,7 @@ import de.vanappsteer.windowalarmconfig.interfaces.ConfigController;
 import de.vanappsteer.windowalarmconfig.interfaces.MqttConfigView;
 import de.vanappsteer.windowalarmconfig.models.MqttConfigModel;
 
-public class MqttConfigPresenter implements ConfigController<MqttConfigModel> {
+public class MqttConfigPresenter extends ConfigController<MqttConfigModel> {
 
     private MqttConfigModel mModel;
     private MqttConfigView mView;
