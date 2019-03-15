@@ -91,4 +91,21 @@ public class DeviceConfigFragment extends Fragment implements DeviceConfigView {
     public DeviceConfigModel getModel() {
         return mPresenter.getModel();
     }
+
+    @Override
+    public void updateDisplayedErrors() {
+        if ("".equals(mPresenter.getDeviceRoom())) {
+            mEditTextDeviceRoom.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextDeviceRoom.setError(null);
+        }
+
+        if ("".equals(mPresenter.getDeviceId())) {
+            mEditTextDeviceID.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextDeviceID.setError(null);
+        }
+    }
 }

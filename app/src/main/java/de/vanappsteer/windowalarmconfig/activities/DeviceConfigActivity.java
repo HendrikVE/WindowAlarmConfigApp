@@ -139,6 +139,10 @@ public class DeviceConfigActivity extends AppCompatActivity {
 
                         viewPager.setCurrentItem(i);
 
+                        // only call updateDisplayedErrors() after setCurrentItem so fragment is
+                        // shown (be aware of nullpointer exceptions otherwise)
+                        configView.updateDisplayedErrors();
+
                         return;
                     }
 

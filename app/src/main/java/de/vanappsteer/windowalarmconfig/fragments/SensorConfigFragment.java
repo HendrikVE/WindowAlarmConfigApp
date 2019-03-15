@@ -72,4 +72,14 @@ public class SensorConfigFragment extends Fragment implements SensorConfigView {
     public SensorConfigModel getModel() {
         return mPresenter.getModel();
     }
+
+    @Override
+    public void updateDisplayedErrors() {
+        if ("".equals(mPresenter.getSensorPollInterval())) {
+            mEditTextSensorPollInterval.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextSensorPollInterval.setError(null);
+        }
+    }
 }

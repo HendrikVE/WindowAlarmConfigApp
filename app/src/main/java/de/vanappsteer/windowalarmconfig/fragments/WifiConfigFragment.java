@@ -89,4 +89,21 @@ public class WifiConfigFragment extends Fragment implements WifiConfigView {
     public WifiConfigModel getModel() {
         return mPresenter.getModel();
     }
+
+    @Override
+    public void updateDisplayedErrors() {
+        if ("".equals(mPresenter.getSsid())) {
+            mEditTextWifiSsid.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextWifiSsid.setError(null);
+        }
+
+        if ("".equals(mPresenter.getPassword())) {
+            mEditTextWifiPassword.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextWifiPassword.setError(null);
+        }
+    }
 }

@@ -6,4 +6,6 @@ public interface ConfigView<T extends ConfigModel> {
 
     void setModel(T model);
     T getModel();
+
+    void updateDisplayedErrors();
 }

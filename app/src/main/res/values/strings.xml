@@ -95,6 +95,7 @@
     <string name="text_wifi_pasword">WiFi pasword</string>
     <string name="text_wifi_ssid">WiFi SSID</string>
     <string name="text_sensor_poll_interval">Sensor poll interval (in ms)</string>
+    <string name="text_cant_be_empty">Can\'t be empty</string>
     <!-- end (generic) texts -->
 
 </resources>

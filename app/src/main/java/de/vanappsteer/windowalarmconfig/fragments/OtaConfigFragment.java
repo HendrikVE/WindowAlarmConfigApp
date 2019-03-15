@@ -123,4 +123,35 @@ public class OtaConfigFragment extends Fragment implements OtaConfigView {
     public OtaConfigModel getModel() {
         return mPresenter.getModel();
     }
+
+    @Override
+    public void updateDisplayedErrors() {
+        if ("".equals(mPresenter.getOtaServerAddress())) {
+            mEditTextOtaServerAddress.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextOtaServerAddress.setError(null);
+        }
+
+        if ("".equals(mPresenter.getOtaFilename())) {
+            mEditTextOtaFilename.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextOtaFilename.setError(null);
+        }
+
+        if ("".equals(mPresenter.getOtaUsername())) {
+            mEditTextOtaUsername.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextOtaUsername.setError(null);
+        }
+
+        if ("".equals(mPresenter.getOtaPassword())) {
+            mEditTextOtaPassword.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextOtaPassword.setError(null);
+        }
+    }
 }

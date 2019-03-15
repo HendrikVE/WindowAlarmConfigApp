@@ -155,4 +155,35 @@ public class MqttConfigFragment extends Fragment implements MqttConfigView {
     public MqttConfigModel getModel() {
         return mPresenter.getModel();
     }
+
+    @Override
+    public void updateDisplayedErrors() {
+        if ("".equals(mPresenter.getMqttUsername())) {
+            mEditTextMqttUsername.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextMqttUsername.setError(null);
+        }
+
+        if ("".equals(mPresenter.getMqttPassword())) {
+            mEditTextMqttPassword.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextMqttPassword.setError(null);
+        }
+
+        if ("".equals(mPresenter.getMqttBrokerAddress())) {
+            mEditTextMqttBrokerAddress.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextMqttBrokerAddress.setError(null);
+        }
+
+        if ("".equals(mPresenter.getMqttBrokerPort())) {
+            mEditTextMqttBrokerPort.setError(getString(R.string.text_cant_be_empty));
+        }
+        else {
+            mEditTextMqttBrokerPort.setError(null);
+        }
+    }
 }
