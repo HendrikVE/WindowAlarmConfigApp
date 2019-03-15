@@ -25,6 +25,11 @@ public class MqttConfigFragment extends Fragment implements MqttConfigView {
 
     private PortInputValidator mPortInputValidator = new PortInputValidator();
 
+    private final int ERROR_STATE_KEY_USERNAME = 0;
+    private final int ERROR_STATE_KEY_PASSWORD = 1;
+    private final int ERROR_STATE_KEY_BROKER_ADDRESS = 2;
+    private final int ERROR_STATE_KEY_BROKER_PORT = 3;
+
     private MqttConfigPresenter mPresenter;
 
     public MqttConfigFragment() {
@@ -111,9 +116,11 @@ public class MqttConfigFragment extends Fragment implements MqttConfigView {
 
                 if (! valid) {
                     mEditTextMqttBrokerPort.setError(mPortInputValidator.getValidRangeString());
+                    mPresenter.addErrorState(ERROR_STATE_KEY_BROKER_PORT);
                 }
                 else {
                     mEditTextMqttBrokerPort.setError(null);
+                    mPresenter.removeErrorState(ERROR_STATE_KEY_BROKER_PORT);
                 }
             }
         });
