@@ -188,7 +188,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
         DeviceConfigActivity.this.finish();
     }
 
-    public static void hideKeyboard(Activity activity) {
+    private static void hideKeyboard(Activity activity) {
 
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
 

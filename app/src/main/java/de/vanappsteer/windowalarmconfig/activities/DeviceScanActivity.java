@@ -261,21 +261,17 @@ public class DeviceScanActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.scan_menu, menu);
 
         mScanSwitch = menu.findItem(R.id.menuItemBluetoothSwitch).getActionView().findViewById(R.id.bluetoothScanSwitch);
-        mScanSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mScanSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
 
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            if (! mScanSwitchEnabled) {
+                return;
+            }
 
-                if (! mScanSwitchEnabled) {
-                    return;
-                }
-
-                if (isChecked) {
-                    checkPermissions();
-                }
-                else {
-                    stopScan();
-                }
+            if (isChecked) {
+                checkPermissions();
+            }
+            else {
+                stopScan();
             }
         });
 
