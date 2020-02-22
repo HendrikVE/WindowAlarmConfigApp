@@ -2,14 +2,9 @@ package de.vanappsteer.windowalarmconfig.activities;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -32,9 +27,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.scan.ScanResult;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,11 +39,35 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.BluetoothAdapterStateListener;
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.ScanListener;
 import de.vanappsteer.windowalarmconfig.R;
 import de.vanappsteer.windowalarmconfig.adapter.DeviceListAdapter;
-import de.vanappsteer.windowalarmconfig.services.BluetoothDeviceConnectionService;
-import de.vanappsteer.windowalarmconfig.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
+import de.vanappsteer.windowalarmconfig.services.DeviceConfigProtocolService;
 import de.vanappsteer.windowalarmconfig.util.LoggingUtil;
+
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_GENERIC;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_READ;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_UNSUPPORTED;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_CONNECTION_ERROR_WRITE;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DEVICE_DISCONNECTED;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.STATE_OFF;
+import static de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.STATE_ON;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_DEVICE_ID_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_DEVICE_RESTART_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_DEVICE_ROOM_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_MQTT_PASSWORD_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_MQTT_SERVER_IP_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_MQTT_SERVER_PORT_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_MQTT_USER_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_OTA_FILENAME_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_OTA_HOST_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_OTA_SERVER_PASSWORD_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_OTA_SERVER_USERNAME_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_SENSOR_POLL_INTERVAL_MS_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_WIFI_PASSWORD_UUID;
+import static de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile.CHARACTERISTIC_WIFI_SSID_UUID;
 
 public class DeviceScanActivity extends AppCompatActivity {
 
@@ -70,13 +91,10 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private final String KEY_SP_ASKED_FOR_LOCATION = "KEY_SP_ASKED_FOR_LOCATION";
 
-    private BluetoothManager mBluetoothManager;
-    private BluetoothAdapter mBluetoothAdapter;
-
-    private BluetoothDeviceConnectionService mDeviceService;
+    private DeviceConfigProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
-    private Set<BluetoothDevice> bleDeviceSet = new HashSet<>();
+    private Set<RxBleDevice> bleDeviceSet = new HashSet<>();
 
     private DeviceListAdapter mAdapter;
     private boolean mScanSwitchEnabled = true;
@@ -91,37 +109,7 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private SharedPreferences mSP;
 
-    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                switch (state) {
-
-                    case BluetoothAdapter.STATE_OFF:
-                        stopScan();
-                        break;
-
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        // do nothing
-                        break;
-
-                    case BluetoothAdapter.STATE_ON:
-                        // do nothing
-                        break;
-
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        // do nothing
-                        break;
-
-                    default:
-                        LoggingUtil.warning("unhandled state: " + state);
-                }
-            }
-        }
-    };
+    private HashMap<UUID, String> mMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,18 +122,14 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         initViews();
 
-        mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mSP = PreferenceManager.getDefaultSharedPreferences(this);
-
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mBroadcastReceiver, filter);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        Intent intent = new Intent(this, BluetoothDeviceConnectionService.class);
+        Intent intent = new Intent(this, DeviceConfigProtocolService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -170,23 +154,18 @@ public class DeviceScanActivity extends AppCompatActivity {
         stopScan();
     }
 
-    /*@Override
-    protected void onStop() {
-        super.onStop();
-    }*/
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
         if (mDeviceServiceBound) {
             mDeviceService.removeDeviceConnectionListener(mDeviceConnectionListener);
+            mDeviceService.removeBluetoothAdapterStateListener(mBluetoothAdapterStateListener);
             mDeviceService.disconnectDevice();
+
             unbindService(mConnection);
             mDeviceServiceBound = false;
         }
-
-        unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
@@ -310,8 +289,10 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         mTextViewEnableBluetooth.setVisibility(View.GONE);
 
+        mDeviceService.addScanListener(mScanListener);
+
         mIsScanning = true;
-        mBluetoothAdapter.startLeScan(mLeScanCallback);
+        mDeviceService.startDeviceScan();
     }
 
     private void stopScan() {
@@ -324,12 +305,13 @@ public class DeviceScanActivity extends AppCompatActivity {
             mScanSwitchEnabled = true;
         }
 
-        // mBluetoothAdapter is null if only checkPermissions() was called, but not checkBluetooth()
-        if (mBluetoothAdapter != null) {
+        int adapterState = mDeviceService.getBluetoothAdapterState();
+
+        if (adapterState == STATE_ON) {
+            mDeviceService.removeScanListener(mScanListener);
+
             mIsScanning = false;
-            if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            }
+            mDeviceService.stopDeviceScan();
         }
 
         bleDeviceSet.clear();
@@ -355,8 +337,9 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         mAdapter = new DeviceListAdapter();
         mAdapter.setOnDeviceSelectionListener(new DeviceListAdapter.OnDeviceSelectionListener() {
+
             @Override
-            public void onDeviceSelected(BluetoothDevice device) {
+            public void onDeviceSelected(RxBleDevice device) {
 
                 if (mDeviceServiceBound) {
                     mDeviceService.addDeviceConnectionListener(mDeviceConnectionListener);
@@ -387,11 +370,9 @@ public class DeviceScanActivity extends AppCompatActivity {
 
     private void checkBluetooth() {
 
-        if (mBluetoothManager != null) {
-            mBluetoothAdapter = mBluetoothManager.getAdapter();
-        }
+        int adapterState = mDeviceService.getBluetoothAdapterState();
 
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+        if (adapterState != STATE_ON) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, ACTIVITY_RESULT_ENABLE_BLUETOOTH);
         }
@@ -455,47 +436,10 @@ public class DeviceScanActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+    private RxBleDevice getDeviceByBleAddress(Set<RxBleDevice> deviceSet, String address) {
 
-        @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-
-            runOnUiThread(() -> {
-
-                if (! mIsScanning) {
-                    return;
-                }
-
-                boolean added = false;
-
-                // update device in set if a name was found after address was already discovered
-                BluetoothDevice deviceFound = getDeviceByBleAddress(bleDeviceSet, device.getAddress());
-
-                if (device.getName() == null) {
-                    // ignore devices without a name
-                    return;
-                }
-
-                if (deviceFound != null && deviceFound.getName() == null && device.getName() != null) {
-                    bleDeviceSet.remove(deviceFound);
-                    added = bleDeviceSet.add(device);
-                }
-                else if(deviceFound == null) {
-                    added = bleDeviceSet.add(device);
-                }
-
-                if (added) {
-                    mAdapter.setDevices(bleDeviceSet);
-                    mAdapter.notifyDataSetChanged();
-                }
-            });
-        }
-    };
-
-    private BluetoothDevice getDeviceByBleAddress(Set<BluetoothDevice> deviceSet, String address) {
-
-        for (BluetoothDevice device : deviceSet) {
-            if (device.getAddress().equals(address)) {
+        for (RxBleDevice device : deviceSet) {
+            if (device.getMacAddress().equals(address)) {
                 return device;
             }
         }
@@ -503,10 +447,10 @@ public class DeviceScanActivity extends AppCompatActivity {
         return null;
     }
 
-    private void openDeviceConfigActivity(HashMap<UUID, String> characteristicHashMap) {
+    private void openDeviceConfigActivity() {
 
         Intent intent = new Intent(DeviceScanActivity.this, DeviceConfigActivity.class);
-        intent.putExtra(DeviceConfigActivity.KEY_CHARACTERISTIC_HASH_MAP, characteristicHashMap);
+        intent.putExtra(DeviceConfigActivity.KEY_CHARACTERISTIC_HASH_MAP, mMap);
         startActivityForResult(intent, ACTIVITY_RESULT_CONFIGURE_DEVICE);
     }
 
@@ -585,9 +529,11 @@ public class DeviceScanActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            BluetoothDeviceConnectionService.LocalBinder binder = (BluetoothDeviceConnectionService.LocalBinder) service;
+            DeviceConfigProtocolService.LocalBinder binder = (DeviceConfigProtocolService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceServiceBound = true;
+
+            mDeviceService.addBluetoothAdapterStateListener(mBluetoothAdapterStateListener);
         }
 
         @Override
@@ -596,18 +542,100 @@ public class DeviceScanActivity extends AppCompatActivity {
         }
     };
 
+    private ScanListener mScanListener = new ScanListener() {
+
+        @Override
+        public void onScanResult(ScanResult scanResult) {
+
+            RxBleDevice device = scanResult.getBleDevice();
+
+            if (! mIsScanning) {
+                return;
+            }
+
+            boolean added = false;
+
+            // update device in set if a name was found after address was already discovered
+            RxBleDevice deviceFound = getDeviceByBleAddress(bleDeviceSet, device.getMacAddress());
+
+            if (device.getName() == null) {
+                // ignore devices without a name
+                return;
+            }
+
+            if (deviceFound != null && deviceFound.getName() == null && device.getName() != null) {
+                bleDeviceSet.remove(deviceFound);
+                added = bleDeviceSet.add(device);
+            }
+            else if(deviceFound == null) {
+                added = bleDeviceSet.add(device);
+            }
+
+            if (added) {
+                mAdapter.setDevices(bleDeviceSet);
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+    };
+
+    private BluetoothAdapterStateListener mBluetoothAdapterStateListener = new BluetoothAdapterStateListener() {
+
+        @Override
+        public void onStateChange(int state) {
+
+            switch (state) {
+                case STATE_ON:
+                    startScan();
+                    break;
+
+                case STATE_OFF:
+                    stopScan();
+                    break;
+
+                default:
+                    LoggingUtil.warning("unhandled state: " + state);
+            }
+        }
+    };
+
     private DeviceConnectionListener mDeviceConnectionListener = new DeviceConnectionListener() {
 
         @Override
-        public void onDeviceConnected() {
-            mDeviceService.readCharacteristics();
+        public void onCharacteristicRead(UUID uuid, String value) {
+            mMap.put(uuid, value);
+
+            LoggingUtil.debug("new characteristic read");
+            LoggingUtil.debug(uuid.toString() + " " + value);
+
+            if (mMap.size() >= 13) {
+                openDeviceConfigActivity();
+            }
         }
 
         @Override
-        public void onAllCharacteristicsRead(Map<UUID, String> characteristicMap) {
+        public void onDeviceConnected() {
+
+            UUID[] uuids = {
+                CHARACTERISTIC_DEVICE_ROOM_UUID,
+                CHARACTERISTIC_DEVICE_ID_UUID,
+                CHARACTERISTIC_MQTT_USER_UUID,
+                CHARACTERISTIC_MQTT_PASSWORD_UUID,
+                CHARACTERISTIC_MQTT_SERVER_IP_UUID,
+                CHARACTERISTIC_MQTT_SERVER_PORT_UUID,
+                CHARACTERISTIC_OTA_HOST_UUID,
+                CHARACTERISTIC_OTA_FILENAME_UUID,
+                CHARACTERISTIC_OTA_SERVER_USERNAME_UUID,
+                CHARACTERISTIC_OTA_SERVER_PASSWORD_UUID,
+                CHARACTERISTIC_WIFI_SSID_UUID,
+                CHARACTERISTIC_WIFI_PASSWORD_UUID,
+                CHARACTERISTIC_SENSOR_POLL_INTERVAL_MS_UUID
+            };
+            mDeviceService.readCharacteristics(uuids);
+
             mDialogConnectDevice.dismiss();
-            openDeviceConfigActivity((HashMap<UUID, String>) characteristicMap);
-            mDeviceService.removeDeviceConnectionListener(this);
+            // TODO
+            //openDeviceConfigActivity();
+            //mDeviceService.removeDeviceConnectionListener(this);
         }
 
         @Override

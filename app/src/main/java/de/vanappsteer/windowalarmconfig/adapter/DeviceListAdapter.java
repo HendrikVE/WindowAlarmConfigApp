@@ -1,6 +1,5 @@
 package de.vanappsteer.windowalarmconfig.adapter;
 
-import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.polidea.rxandroidble2.RxBleDevice;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +20,7 @@ import de.vanappsteer.windowalarmconfig.R;
 
 public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.MyViewHolder> {
 
-    private List<BluetoothDevice> mDevices;
+    private List<RxBleDevice> mDevices;
     private OnDeviceSelectionListener mOnDeviceSelectionListener;
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
@@ -38,14 +39,14 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
 
     public static abstract class OnDeviceSelectionListener {
 
-        public abstract void onDeviceSelected(BluetoothDevice device);
+        public abstract void onDeviceSelected(RxBleDevice device);
     }
 
     public DeviceListAdapter() {
         mDevices = new ArrayList<>();
     }
 
-    public DeviceListAdapter(List<BluetoothDevice> myDataset) {
+    public DeviceListAdapter(List<RxBleDevice> myDataset) {
         mDevices = myDataset;
     }
 
@@ -73,7 +74,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
         textViewDeviceName.setText(deviceName);
 
         TextView textViewDeviceAddress = holder.getRootView().findViewById(R.id.textViewDeviceAddress);
-        textViewDeviceAddress.setText(mDevices.get(position).getAddress());
+        textViewDeviceAddress.setText(mDevices.get(position).getMacAddress());
 
     }
 
@@ -82,7 +83,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
         return mDevices.size();
     }
 
-    public void setDevices(Set<BluetoothDevice> deviceSet) {
+    public void setDevices(Set<RxBleDevice> deviceSet) {
 
         mDevices.clear();
         mDevices.addAll(deviceSet);
@@ -94,12 +95,12 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
         mOnDeviceSelectionListener = listener;
     }
 
-    private class DeviceComparator implements Comparator<BluetoothDevice> {
+    private class DeviceComparator implements Comparator<RxBleDevice> {
 
-        public int compare(BluetoothDevice first, BluetoothDevice second) {
+        public int compare(RxBleDevice first, RxBleDevice second) {
 
             if (first.getName() == null && second.getName() == null) {
-                return first.getAddress().compareTo(second.getAddress());
+                return first.getMacAddress().compareTo(second.getMacAddress());
             }
             else if (first.getName() == null) {
                 return 1;
@@ -109,7 +110,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.My
             }
 
             if (first.getName().compareTo(second.getName()) == 0) {
-                return first.getAddress().compareTo(second.getAddress());
+                return first.getMacAddress().compareTo(second.getMacAddress());
             }
             else {
                 return first.getName().compareTo(second.getName());

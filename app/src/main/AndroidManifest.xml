@@ -47,7 +47,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service
-            android:name=".services.BluetoothDeviceConnectionService"
+            android:name=".services.DeviceConfigProtocolService"
             android:exported="false"/>
     </application>
 

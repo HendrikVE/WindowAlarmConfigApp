@@ -24,8 +24,8 @@ import de.vanappsteer.windowalarmconfig.R;
 import de.vanappsteer.windowalarmconfig.adapter.PagerAdapter;
 import de.vanappsteer.windowalarmconfig.interfaces.ConfigView;
 import de.vanappsteer.windowalarmconfig.models.ConfigModel;
-import de.vanappsteer.windowalarmconfig.services.BluetoothDeviceConnectionService;
-import de.vanappsteer.windowalarmconfig.services.BluetoothDeviceConnectionService.DeviceConnectionListener;
+import de.vanappsteer.windowalarmconfig.services.DeviceConfigProtocolService;
+import de.vanappsteer.genericbleprotocolservice.GenericBleProtocolService.DeviceConnectionListener;
 import de.vanappsteer.windowalarmconfig.util.BleConfigurationProfile;
 import de.vanappsteer.windowalarmconfig.util.LoggingUtil;
 
@@ -43,7 +43,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
 
     public static final String KEY_CHARACTERISTIC_HASH_MAP = "KEY_CHARACTERISTIC_HASH_MAP";
 
-    private BluetoothDeviceConnectionService mDeviceService;
+    private DeviceConfigProtocolService mDeviceService;
     private boolean mDeviceServiceBound = false;
 
     private AlertDialog mDialogWriteToDevice;
@@ -80,7 +80,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        Intent intent = new Intent(this, BluetoothDeviceConnectionService.class);
+        Intent intent = new Intent(this, DeviceConfigProtocolService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -162,7 +162,9 @@ public class DeviceConfigActivity extends AppCompatActivity {
                 mDialogWriteToDevice = builder.create();
                 mDialogWriteToDevice.show();
 
-                mDeviceService.writeCharacteristics(map);
+                for (Map.Entry<UUID, String> entry : map.entrySet()) {
+                    mDeviceService.writeCharacteristic(entry.getKey(), entry.getValue().getBytes());
+                }
             }
             else {
                 // TODO: keep config activity instead and retry?
@@ -209,7 +211,7 @@ public class DeviceConfigActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
-            BluetoothDeviceConnectionService.LocalBinder binder = (BluetoothDeviceConnectionService.LocalBinder) service;
+            DeviceConfigProtocolService.LocalBinder binder = (DeviceConfigProtocolService.LocalBinder) service;
             mDeviceService = binder.getService();
             mDeviceService.addDeviceConnectionListener(mDeviceConnectionListener);
             mDeviceServiceBound = true;
@@ -231,9 +233,10 @@ public class DeviceConfigActivity extends AppCompatActivity {
                 mRestartCommandSent = true;
 
                 // send restart command
-                Map<UUID, String> map = new HashMap<>();
-                map.put(BleConfigurationProfile.CHARACTERISTIC_DEVICE_RESTART_UUID, "empty value");
-                mDeviceService.writeCharacteristics(map);
+                mDeviceService.writeCharacteristic(
+                        BleConfigurationProfile.CHARACTERISTIC_DEVICE_RESTART_UUID,
+                        "empty value".getBytes()
+                );
             }
             else {
                 finishWithIntent(Result.SUCCESS);
